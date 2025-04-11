@@ -63,7 +63,7 @@ def index(request):
     context = {
         "lfs_team_list": lfs_teams_tuple_list,
         "lfs_pot_size": lfs_potsize,
-        "lfs_game_week": current_game.current_week-1,
+        "lfs_game_week": current_game.current_week,
         "week_range" : list(range(MIN_WEEK, current_game.current_week)),
         "top_picks" : top_picks_string,
         "end_date" : endDate,

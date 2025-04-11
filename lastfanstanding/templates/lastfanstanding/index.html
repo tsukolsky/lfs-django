@@ -13,39 +13,7 @@
 </head>
 <body>
   <br>
-  <script>
-      function updateTimer()
-      {
-        var hours = parseInt(document.getElementById('countdown').textContent.split(':')[0]);
-        var minutes = parseInt(document.getElementById('countdown').textContent.split(':')[1]);
-        var seconds = parseInt(document.getElementById('countdown').textContent.split(':')[2]);
-
-        if (seconds > 0) {
-          seconds--;
-        }
-        else {
-          if (minutes > 0) {
-            minutes--;
-            seconds = 59;
-          }
-          else {
-            if (hours > 0) {
-              hours--;
-              minutes=59;
-              seconds=59;
-            } else {
-              // timer has reached end
-            }
-          }
-        }
-
-        // Update timer display
-        document.getElementById("countdown").textContent = (hours < 10 ? '0' : '') + hours + ':' +
-         (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
-      } // end function
-      // update timer every second
-      setInterval(updateTimer, 1000);
-  </script>
+  <script src="{% static 'lastfanstanding/js/countdowntimer.js' %}"></script>
   <div class="container-fluid" style="margin-top:60px">
     <div class="row justify-content-center">
       <div class="col-md-12">
@@ -53,13 +21,13 @@
           <h3>{% if lfs_team_list %}{{ lfs_team_list|length }}{% endif %} {% if lfs_team_list|length == 1 %}Team is
             {% else %}Teams are{% endif %} still standing - Total pot: ${{ lfs_pot_size }}
           </h3>
-          <h3>Time Till Week {{ current_week }} closes:
+          <h3>Time Till Week {{ lfs_game_week }} closes:
             <span id="countdown">
             {{ end_date.hours|stringformat:"02d" }}:{{ end_date.minutes|stringformat:"02d" }}:{{ end_date.seconds|stringformat:"02d" }}
             </span>
           </h3>
           <!-- Print out the previous weeks top picks (current week is the picking week, not playing week -->
-          <h3>Week {{ lfs_game_week }} Top Picks: </h3>
+          <h3>Week {{ lfs_game_week|add:-1 }} Top Picks: </h3>
           {{ top_picks }}
         </center>
         <br>
@@ -89,7 +57,7 @@
                                     height='49' alt='{{ pick.nfl_team.name }}'
                                         title='{{ pick.nfl_team.name }}' />
                             <!-- This span should be added if a team has bought back in and is ready to pick again in the next week -->
-                            <span class='badge badge-danger'>Lost</span>
+                            {% if not pick.win_loss %} <span class='badge badge-danger'>Lost</span> {% endif %}
                           </td>
                           {% endwith %}
                         {% endfor %}
