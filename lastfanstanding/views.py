@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import LFSTeam, LFSGame
+from .models import LFSTeam, LFSGame, LFSPick
 from django.template import loader
 
 
@@ -16,38 +16,45 @@ def index(request):
 
     # Get current game - this should be done by year
     current_game = LFSGame.objects.get(year=2025)
+
     # Get current teams associated with this year - for this view, it should only be the active teams
     lfs_teams = current_game.lfsteam_set.filter(active=True)
 
-    # Need to provide the list of picks for all the teams in order to iterate over them and create
-    # a valid table. For each LFS Team, you can get the picks with lfs_teams[i].lfspick_set.all().
-    # This could be passed in as a dictionary, then list?
-    # TODO: Make this code great again, because its very dirty. Something to do with tags?
-    # TODO: look here https://stackoverflow.com/questions/2894365/use-variable-as-dictionary-key-in-django-template
-    team_pick_dictionary = {}
-    if current_game.current_week > MIN_WEEK:
-        for week in range(MIN_WEEK, current_game.current_week):
-            team_pick_dictionary[week] = [] # Should contain LFS Team and NFL team name of the pick
+    # Create a tuple list that contains the (lfs_team, its picks). The picks should be sorted by week to match the
+    # columns
+    lfs_teams_tuple_list = []
+    for team in lfs_teams:
+        team_picks = team.lfspick_set.all().order_by("nfl_week")
+        lfs_teams_tuple_list.append((team, team_picks))
 
-        for team in lfs_teams:
-            team_picks = team.lfspick_set.all()
-            # This pick dictionary should now contain the week number as key, and image directory as the value
-            for pick in team_picks:
-                value = (pick.lfs_team.team_name, pick.nfl_team.name) # TODO: update nfl_team.name to nfl_icon path
-                team_pick_dictionary[pick.nfl_week].append(value)
-
+    # Calculate pot size and save to the game
     lfs_potsize = current_game.CalculatePotSize(lfs_teams)
     current_game.pot_size = lfs_potsize
     current_game.total_teams = len(lfs_teams)
     current_game.save()
 
+    # Calculate the tops picks for this week - this should be the top five of all teams
+    this_week_picks = LFSPick.objects.filter(nfl_week=current_game.current_week-1)
+    topPicks = {}
+    for pick in this_week_picks:
+        if pick.nfl_team.name in topPicks:
+            topPicks[pick.nfl_team.name] += 1
+        else:
+            topPicks[pick.nfl_team.name] = 1
+
+    sorted_top_picks = dict(sorted(topPicks.items(), key=lambda item: item[1], reverse=True))
+    top_keys = list(sorted_top_picks.keys())
+    numRankings = min(len(top_keys),5)
+    top_picks_tuples = [ (team_name, topPicks[team_name]) for team_name in top_keys[0:numRankings]]
+
+    # Load template
     template = loader.get_template("lastfanstanding/index.html")
     context = {
-        "lfs_team_list": lfs_teams,
+        "lfs_team_list": lfs_teams_tuple_list,
         "lfs_pot_size": lfs_potsize,
         "lfs_game_week": current_game.current_week-1,
         "week_range" : list(range(MIN_WEEK, current_game.current_week)),
-        "lfs_team_picks": team_pick_dictionary,
+        "top_picks" : top_picks_tuples,
     }
     return HttpResponse(template.render(context, request))
 

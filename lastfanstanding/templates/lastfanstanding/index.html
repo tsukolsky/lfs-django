@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-  <link rel="icon" href="images/footballfavicon.png">
+  <link rel="icon" type="image/png" href="{% static 'lastfanstanding/images/footballfavicon.png' %}" >
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -20,7 +21,8 @@
             {% else %}Teams are{% endif %} still standing - Total pot: ${{ lfs_pot_size }}
           </h3>
           <!-- Print out the previous weeks top picks (current week is the picking week, not playing week -->
-          <h3>Week {{ lfs_game_week }} Top Picks: TBD</h3>
+          <h3>Week {{ lfs_game_week }} Top Picks: </h3>
+          {% for name, picks in top_picks %}{{ name }}: {{picks}}, {% endfor %}
         </center>
         <br>
         <br>
@@ -37,22 +39,21 @@
             </thead>
             <tbody>
                 {% if lfs_team_list %}
-                  {% for lfs_team in lfs_team_list %}
+                  {% for lfs_team, picks in lfs_team_list %}
                       <tr>
                         <td>
                         <a href="/lastfanstanding/{{ lfs_team.team_name }}/">{{ lfs_team.team_name }}</a>
                         </td>
-                        {# TODO: This is very very crappy code and needs to be fixed #}
-                        {% for week_number in week_range %}
-                          {% for week, picks in lfs_team_picks.items %}
-                            {% if week == week_number %}
-                              {% for lfsteam, nflteam in picks %}
-                                {% if lfsteam == lfs_team.team_name %}
-                                  <td>{{ nflteam }}</td>
-                                {% endif %}
-                              {% endfor %}
-                            {% endif %}
-                          {% endfor %}
+                        {% for pick in picks %}
+                          {% with 'lastfanstanding/images/teamimages/'|add:pick.nfl_team.icon_path as image_static %}
+
+                          <td> <img src = "{% static image_static %}" width='65'
+                                    height='49' alt='{{ pick.nfl_team.name }}'
+                                        title='{{ pick.nfl_team.name }}' />
+                            <!-- This span should be added if a team has bought back in and is ready to pick again in the next week -->
+                            <span class='badge badge-danger'>Lost</span>
+                          </td>
+                          {% endwith %}
                         {% endfor %}
                      </tr>
                   {% endfor %}
