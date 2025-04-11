@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from .models import LFSTeam, LFSGame, LFSPick
 from django.template import loader
-
+from datetime import datetime, timedelta
 
 # Create your views here.
 MIN_WEEK = 1
@@ -42,10 +42,21 @@ def index(request):
         else:
             topPicks[pick.nfl_team.name] = 1
 
-    sorted_top_picks = dict(sorted(topPicks.items(), key=lambda item: item[1], reverse=True))
-    top_keys = list(sorted_top_picks.keys())
+    top_keys = list(dict(sorted(topPicks.items(), key=lambda item: item[1], reverse=True)).keys())
     numRankings = min(len(top_keys),5)
-    top_picks_tuples = [ (team_name, topPicks[team_name]) for team_name in top_keys[0:numRankings]]
+    top_picks_string = ""
+    for team_name in top_keys[0:numRankings]:
+        top_picks_string += f"{team_name}: {topPicks[team_name]}, "
+    top_picks_string = top_picks_string[:-2]
+
+    # Get countdown clocks ready for the countdown timers for current picks
+    timeremaining = datetime(2025,4,13,13, 0, 0) - datetime.now()
+    hours = timeremaining.days * 24 + timeremaining.seconds//3600
+    print(f"time remaining {timeremaining}\nseconds { timeremaining.seconds}, hours {hours}")
+    endDate = {'hours' : hours,
+               'minutes' : (timeremaining.seconds  % 3600) // 60,
+               'seconds' : timeremaining.seconds  % 60
+               }
 
     # Load template
     template = loader.get_template("lastfanstanding/index.html")
@@ -54,7 +65,8 @@ def index(request):
         "lfs_pot_size": lfs_potsize,
         "lfs_game_week": current_game.current_week-1,
         "week_range" : list(range(MIN_WEEK, current_game.current_week)),
-        "top_picks" : top_picks_tuples,
+        "top_picks" : top_picks_string,
+        "end_date" : endDate,
     }
     return HttpResponse(template.render(context, request))
 
