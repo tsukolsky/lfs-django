@@ -20,10 +20,8 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    # ex: /lastfanstanding/cowboys/
-    path("<str:teamname>/", views.teaminfo, name="teaminfo"),
-    # ex: /lastfanstanding/sampleuser/
-    path("<str:username>/", views.userhomepage, name="homepage"),
-    # ex: /polls/5/results/
-    path("<str:username>/picker/", views.picker, name="picker"),
+    path("rules/", views.rules, name="rules"),
+    path("chooseteam/", views.chooseteam, name="chooseteam"),
+    path("cheapseats/", views.cheapseats, name="cheapseats"),
+    path("<str:username>/", views.userhomepage, name="userhome"),
 ]

@@ -1,0 +1,81 @@
+{% load static %}
+<!-- In cheap seats, a red box shoul dbe added around any selection that was a loss, but bought back in. Then a red X
+should be applied to a lost team (it will not show the actual team name -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>LFS</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="icon" href="images/footballfavicon.png">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+{% include "lastfanstanding/navbar.html" %}
+
+<br>
+<div class="container-fluid" style="margin-top:60px">
+  <h3>Cheap Seats</h3>
+
+  <h2>And just like that, these {{ lfs_inactive_teams|length }} teams were not so lucky... </h2>
+
+  <div class="table-responsive">
+  <table class = "table table-hover">
+    <thead>
+      <tr>
+        <th scope = "col">Team Name</th>
+        <th scope = "col">Week 1 Pick </th>
+        <th scope = "col">Week 2 Pick </th>
+        <th scope="col">Week 3 Pick</th>
+        <th scope="col">Week 4 Pick</th>
+        <th scope="col">Week 5 Pick</th>
+        <th scope="col">Week 6 Pick</th>
+        <th scope="col">Week 7 Pick</th>
+        <th scope="col">Week 8 Pick</th>
+        <th scope="col">Week 9 Pick</th>
+        <th scope="col">Week 10 Pick</th>
+        <th scope="col">Week 11 Pick</th>
+        <th scope="col">Week 12 Pick</th>
+        <th scope="col">Week 13 Pick</th>
+        <th scope="col">Week 14 Pick</th>
+        <th scope="col">Week 15 Pick</th>
+        <th scope="col">Week 16 Pick</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if lfs_inactive_teams %}
+        {% for lfs_team, picks in lfs_inactive_teams %}
+          <tr>
+            <td>
+            <a href="/lastfanstanding/{{ lfs_team.team_name }}/">{{ lfs_team.team_name }}</a>
+            </td>
+            {% for pick in picks %}
+              {% with 'lastfanstanding/images/teamimages/'|add:pick.nfl_team.icon_path as image_static %}
+
+              <td> <img src = "{% static image_static %}" width='65'
+                        height='49' alt='{{ pick.nfl_team.name }}'
+                            title='{{ pick.nfl_team.name }}' />
+              </td>
+              {% endwith %}
+            {% endfor %}
+         </tr>
+        {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+
+<script>
+$(document).ready(function() {
+  $('li.active').removeClass('active');
+$activeID = 'cheapseats';
+ $('a[id="'+$activeID+'"]').closest('li').addClass('active');
+});
+</script>
+</div>
+</body>
+</html>

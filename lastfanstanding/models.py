@@ -2,6 +2,7 @@ from email.policy import default
 
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.conf import settings
 
 # Create your models here.
 # Need to enumerate NFL Teams
@@ -39,16 +40,12 @@ class NFLTeam(models.Model):
     def __str__(self):
         return f"{self.name}, bye_week={self.bye_week}, icon_path={self.icon_path}"
 
-class LFSUser(models.Model):
-    user_email = models.EmailField()
-    last_login = models.DateTimeField("last login")
-
-    def __str__(self):
-        return f"{self.user_email}, last_login= {self.last_login}"
-
 class LFSTeam(models.Model):
     team_name = models.CharField(max_length=64)
-    lfs_user = models.ForeignKey(LFSUser, on_delete=models.CASCADE)
+    lfs_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
     active = models.BooleanField(default=False)
     paid_buyback = models.BooleanField(default=False)
     paid_intitial = models.BooleanField(default=False)
